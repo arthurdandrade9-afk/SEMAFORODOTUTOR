@@ -23,11 +23,14 @@ assert.match(html, /R\$\s*17/);
 assert.match(html, /R\$\s*37/);
 assert.match(html, /Google[\s\S]*pânico|pânico[\s\S]*Google/i);
 assert.doesNotMatch(html, /id="responsabilidade"/);
-assert.match(html, /data-testimonials-placeholder/);
-assert.match(html, /section class="social-proof[^>]+hidden/);
+assert.doesNotMatch(html, /data-testimonials-placeholder/);
+assert.doesNotMatch(html, /section class="social-proof[^>]+hidden/);
+assert.equal((html.match(/class="testimonial-slide/g) || []).length, 10);
+assert.match(html, /data-testimonial-carousel/);
+assert.match(html, /data-testimonial-track/);
 assert.match(html, /class="hero-showcase"/);
-assert.match(html, /assets\/images\/hero-product-composite\.png/);
-assert.match(html, /source media="\(max-width: 760px\)" srcset="assets\/images\/hero-product-composite-mobile\.png"/);
+assert.match(html, /assets\/images\/hero-physical-mockup\.webp/);
+assert.match(html, /source media="\(max-width: 760px\)" srcset="assets\/images\/hero-physical-mockup-mobile\.webp"/);
 assert.doesNotMatch(html, /class="product-page/);
 assert.doesNotMatch(html, /class="hero-bonus-rack/);
 assert.equal((html.match(/class="failure-card/g) || []).length, 4);
@@ -40,14 +43,17 @@ for (let index = 1; index <= 6; index += 1) {
   );
 }
 
-assert.ok(
-  fs.existsSync(path.join(root, "assets", "images", "hero-product-composite.png")),
-  "hero-product-composite.png precisa existir",
-);
-assert.ok(
-  fs.existsSync(path.join(root, "assets", "images", "hero-product-composite-mobile.png")),
-  "hero-product-composite-mobile.png precisa existir",
-);
+for (const file of ["hero-physical-mockup.webp", "hero-physical-mockup-mobile.webp"]) {
+  assert.ok(fs.existsSync(path.join(root, "assets", "images", file)), `${file} precisa existir`);
+}
+
+for (let index = 1; index <= 10; index += 1) {
+  const file = `testimonial-${String(index).padStart(2, "0")}.webp`;
+  assert.ok(
+    fs.existsSync(path.join(root, "assets", "images", "testimonials", file)),
+    `${file} precisa existir`,
+  );
+}
 
 for (let index = 1; index <= 4; index += 1) {
   const file = `failure-avatar-${String(index).padStart(2, "0")}.png`;
