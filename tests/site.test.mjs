@@ -29,8 +29,8 @@ assert.equal((html.match(/class="testimonial-slide/g) || []).length, 10);
 assert.match(html, /data-testimonial-carousel/);
 assert.match(html, /data-testimonial-track/);
 assert.match(html, /class="hero-showcase"/);
-assert.match(html, /assets\/images\/hero-physical-mockup\.webp/);
-assert.match(html, /source media="\(max-width: 760px\)" srcset="assets\/images\/hero-physical-mockup-mobile\.webp"/);
+assert.match(html, /assets\/images\/hero-mockup-completo\.webp/);
+assert.match(html, /fetchpriority="high"/);
 assert.doesNotMatch(html, /class="product-page/);
 assert.doesNotMatch(html, /class="hero-bonus-rack/);
 assert.equal((html.match(/class="failure-card/g) || []).length, 4);
@@ -43,9 +43,10 @@ for (let index = 1; index <= 6; index += 1) {
   );
 }
 
-for (const file of ["hero-physical-mockup.webp", "hero-physical-mockup-mobile.webp"]) {
-  assert.ok(fs.existsSync(path.join(root, "assets", "images", file)), `${file} precisa existir`);
-}
+assert.ok(
+  fs.existsSync(path.join(root, "assets", "images", "hero-mockup-completo.webp")),
+  "hero-mockup-completo.webp precisa existir",
+);
 
 for (let index = 1; index <= 10; index += 1) {
   const file = `testimonial-${String(index).padStart(2, "0")}.webp`;
