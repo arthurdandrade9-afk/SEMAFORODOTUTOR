@@ -27,6 +27,7 @@ assert.match(html, /data-testimonials-placeholder/);
 assert.match(html, /section class="social-proof[^>]+hidden/);
 assert.match(html, /class="hero-showcase"/);
 assert.match(html, /assets\/images\/hero-product-composite\.png/);
+assert.match(html, /source media="\(max-width: 760px\)" srcset="assets\/images\/hero-product-composite-mobile\.png"/);
 assert.doesNotMatch(html, /class="product-page/);
 assert.doesNotMatch(html, /class="hero-bonus-rack/);
 assert.equal((html.match(/class="failure-card/g) || []).length, 4);
@@ -42,6 +43,10 @@ for (let index = 1; index <= 6; index += 1) {
 assert.ok(
   fs.existsSync(path.join(root, "assets", "images", "hero-product-composite.png")),
   "hero-product-composite.png precisa existir",
+);
+assert.ok(
+  fs.existsSync(path.join(root, "assets", "images", "hero-product-composite-mobile.png")),
+  "hero-product-composite-mobile.png precisa existir",
 );
 
 for (let index = 1; index <= 4; index += 1) {

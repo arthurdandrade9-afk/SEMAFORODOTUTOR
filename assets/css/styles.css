@@ -109,12 +109,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(360px, 520px) minmax(500px, 760px);
+  grid-template-columns: minmax(360px, 480px) minmax(600px, 840px);
   align-items: center;
   justify-content: center;
-  gap: clamp(45px, 5vw, 88px);
+  gap: clamp(26px, 3vw, 46px);
   min-height: 720px;
-  padding: 68px max(5%, calc((100vw - 1480px) / 2)) 58px;
+  padding: 68px max(3%, calc((100vw - 1420px) / 2)) 58px;
   overflow: hidden;
   background: linear-gradient(120deg, rgba(253, 251, 245, 0.98), rgba(240, 236, 226, 0.91));
 }
@@ -143,7 +143,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .landscape__hill,
 .landscape__foliage { display: none; }
 
-.hero__copy { position: relative; z-index: 4; width: 100%; max-width: 520px; }
+.hero__copy { position: relative; z-index: 4; width: 100%; max-width: 480px; }
 
 .eyebrow {
   display: inline-flex;
@@ -221,8 +221,9 @@ h3 { font-family: var(--font-display); }
 .hero__proof { display: flex; flex-wrap: wrap; gap: 12px 22px; margin-top: 22px; color: #657068; font-size: 0.83rem; }
 .hero__proof span::before { content: "✓"; margin-right: 6px; color: var(--gold); font-weight: 600; }
 
-.hero-showcase { position: relative; z-index: 3; width: 100%; max-width: 760px; margin: 0; }
-.hero-showcase > img { width: 100%; height: auto; filter: drop-shadow(0 24px 30px rgba(48, 38, 19, 0.13)); }
+.hero-showcase { position: relative; z-index: 3; width: 100%; max-width: 840px; margin: 0; }
+.hero-showcase picture { display: block; }
+.hero-showcase picture > img { width: 100%; height: auto; filter: drop-shadow(0 24px 30px rgba(48, 38, 19, 0.13)); }
 .hero-showcase figcaption { position: absolute; left: 50%; bottom: 1.8%; display: flex; align-items: center; gap: 10px; padding: 9px 18px; border: 1px solid rgba(212, 181, 103, 0.66); border-radius: 999px; background: rgba(7, 63, 46, 0.95); color: #fff8e7; box-shadow: 0 10px 22px rgba(32, 27, 16, 0.16); font-size: 0.72rem; transform: translateX(-50%); white-space: nowrap; }
 .hero-showcase figcaption strong { color: var(--gold-light); font-family: var(--font-display); font-size: 0.92rem; }
 .hero-showcase figcaption span { opacity: 0.84; }
