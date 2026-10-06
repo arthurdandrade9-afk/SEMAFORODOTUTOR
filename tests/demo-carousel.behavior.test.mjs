@@ -36,34 +36,28 @@ try {
 
   assert.equal(await desktop.locator("[data-demo-carousel]").count(), 1, "a galeria deve ser um carrossel");
   assert.equal(await desktop.locator(".demo-slide:not([data-demo-clone])").count(), 20, "o carrossel deve conter os vinte demonstrativos originais");
+  assert.equal(await desktop.locator("button.demo-slide").count(), 0, "os demonstrativos não devem ser clicáveis");
+  assert.equal(await desktop.locator("#lightbox").count(), 0, "a página não deve oferecer ampliação dos demonstrativos");
+  assert.equal(await desktop.locator("[data-demo-prev], [data-demo-next], [data-demo-dots], [data-demo-status]").count(), 0, "a esteira não deve exibir controles estáticos");
 
   const desktopLayout = await desktop.evaluate(() => {
     const track = document.querySelector("[data-demo-track]").getBoundingClientRect();
     const slides = [...document.querySelectorAll(".demo-slide:not([data-demo-clone])")].map((slide) => slide.getBoundingClientRect());
     return {
       visible: Math.round(track.width / (slides[0].width + 17)),
-      status: document.querySelector("[data-demo-status]")?.textContent,
     };
   });
   assert.equal(desktopLayout.visible, 4, "o desktop deve exibir quatro demonstrativos completos por vez");
-  assert.match(desktopLayout.status, /1 de 5/, "o desktop deve organizar os demonstrativos em cinco grupos");
 
   const initialPosition = await desktop.locator("[data-demo-track]").evaluate((track) => track.scrollLeft);
   await desktop.waitForTimeout(900);
   const movingPosition = await desktop.locator("[data-demo-track]").evaluate((track) => track.scrollLeft);
-  assert.ok(movingPosition > initialPosition + 8, `os demonstrativos devem deslizar continuamente para o lado (${initialPosition} → ${movingPosition})`);
+  assert.ok(movingPosition < initialPosition - 8, `os demonstrativos devem deslizar continuamente da esquerda para a direita (${initialPosition} → ${movingPosition})`);
 
   await desktop.locator("[data-demo-carousel]").hover();
-  await desktop.waitForTimeout(150);
-  const pausedPosition = await desktop.locator("[data-demo-track]").evaluate((track) => track.scrollLeft);
   await desktop.waitForTimeout(500);
-  const stillPausedPosition = await desktop.locator("[data-demo-track]").evaluate((track) => track.scrollLeft);
-  assert.ok(Math.abs(stillPausedPosition - pausedPosition) < 2, "o movimento deve pausar enquanto o mouse estiver sobre o carrossel");
-
-  await desktop.mouse.move(5, 5);
-  await desktop.waitForTimeout(650);
-  const resumedPosition = await desktop.locator("[data-demo-track]").evaluate((track) => track.scrollLeft);
-  assert.ok(resumedPosition > stillPausedPosition + 5, "o movimento deve retomar suavemente após a interação");
+  const hoveredPosition = await desktop.locator("[data-demo-track]").evaluate((track) => track.scrollLeft);
+  assert.ok(hoveredPosition < movingPosition - 5, "a esteira deve continuar em movimento mesmo com o mouse sobre ela");
   await desktop.close();
 
   const mobile = await browser.newPage({ viewport: { width: 540, height: 844 } });
@@ -73,11 +67,9 @@ try {
     const slides = [...document.querySelectorAll(".demo-slide:not([data-demo-clone])")].map((slide) => slide.getBoundingClientRect());
     return {
       visible: Math.round(track.width / (slides[0].width + 17)),
-      status: document.querySelector("[data-demo-status]")?.textContent,
     };
   });
   assert.equal(mobileLayout.visible, 1, "o celular deve exibir um demonstrativo por vez");
-  assert.match(mobileLayout.status, /1 de 20/, "o celular deve permitir navegar pelos vinte demonstrativos");
   await mobile.close();
 } finally {
   await browser.close();
