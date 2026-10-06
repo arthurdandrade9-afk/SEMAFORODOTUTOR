@@ -58,7 +58,119 @@ document.querySelectorAll("[data-checkout-placeholder]").forEach((link) => {
   });
 });
 
-const TESTIMONIAL_INTERVAL = 6000;
+const CAROUSEL_INTERVAL = 6000;
+
+document.querySelectorAll("[data-demo-carousel]").forEach((carousel) => {
+  const track = carousel.querySelector("[data-demo-track]");
+  const slides = [...carousel.querySelectorAll(".demo-slide")];
+  const previousButton = carousel.querySelector("[data-demo-prev]");
+  const nextButton = carousel.querySelector("[data-demo-next]");
+  const dotsContainer = carousel.querySelector("[data-demo-dots]");
+  const status = carousel.querySelector("[data-demo-status]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let currentPage = 0;
+  let dots = [];
+  let autoTimer = null;
+  let scrollFrame = null;
+
+  const visibleCount = () => Math.max(1, Math.round(track.clientWidth / Math.max(slides[0]?.getBoundingClientRect().width || 1, 1)));
+  const pageCount = () => Math.ceil(slides.length / visibleCount());
+
+  function updateControls(page) {
+    const total = pageCount();
+    currentPage = (page + total) % total;
+    dots.forEach((dot, index) => {
+      dot.classList.toggle("is-active", index === currentPage);
+      dot.setAttribute("aria-current", index === currentPage ? "true" : "false");
+    });
+    status.textContent = `${currentPage + 1} de ${total}`;
+  }
+
+  function slideOffset(page) {
+    const target = slides[Math.min(page * visibleCount(), slides.length - 1)];
+    return target ? target.offsetLeft - slides[0].offsetLeft : 0;
+  }
+
+  function goTo(page, behavior = "smooth") {
+    const total = pageCount();
+    const nextPage = (page + total) % total;
+    updateControls(nextPage);
+    track.scrollTo({ left: slideOffset(nextPage), behavior });
+  }
+
+  function rebuildDots() {
+    const total = pageCount();
+    dotsContainer.replaceChildren();
+    dots = Array.from({ length: total }, (_, index) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.className = "demo-dot";
+      dot.setAttribute("aria-label", `Ver grupo ${index + 1} de demonstrativos`);
+      dot.addEventListener("click", () => {
+        goTo(index);
+        restartAutoPlay();
+      });
+      dotsContainer.append(dot);
+      return dot;
+    });
+    updateControls(Math.min(currentPage, total - 1));
+  }
+
+  function stopAutoPlay() {
+    window.clearInterval(autoTimer);
+    autoTimer = null;
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    if (reducedMotion.matches || document.hidden) return;
+    autoTimer = window.setInterval(() => goTo(currentPage + 1), CAROUSEL_INTERVAL);
+  }
+
+  function restartAutoPlay() {
+    stopAutoPlay();
+    startAutoPlay();
+  }
+
+  previousButton.addEventListener("click", () => {
+    goTo(currentPage - 1);
+    restartAutoPlay();
+  });
+
+  nextButton.addEventListener("click", () => {
+    goTo(currentPage + 1);
+    restartAutoPlay();
+  });
+
+  track.addEventListener("scroll", () => {
+    if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
+    scrollFrame = window.requestAnimationFrame(() => {
+      const distance = Math.max(slideOffset(1), 1);
+      const page = Math.round(track.scrollLeft / distance);
+      if (page !== currentPage) updateControls(page);
+    });
+  }, { passive: true });
+
+  carousel.addEventListener("pointerdown", stopAutoPlay);
+  carousel.addEventListener("pointerup", restartAutoPlay);
+  carousel.addEventListener("pointercancel", restartAutoPlay);
+  carousel.addEventListener("mouseenter", stopAutoPlay);
+  carousel.addEventListener("mouseleave", startAutoPlay);
+  carousel.addEventListener("focusin", stopAutoPlay);
+  carousel.addEventListener("focusout", (event) => {
+    if (!carousel.contains(event.relatedTarget)) startAutoPlay();
+  });
+  window.addEventListener("resize", () => {
+    rebuildDots();
+    goTo(0, "auto");
+  });
+  document.addEventListener("visibilitychange", () => document.hidden ? stopAutoPlay() : startAutoPlay());
+  reducedMotion.addEventListener?.("change", startAutoPlay);
+
+  rebuildDots();
+  goTo(0, "auto");
+  startAutoPlay();
+});
 
 document.querySelectorAll("[data-testimonial-carousel]").forEach((carousel) => {
   const track = carousel.querySelector("[data-testimonial-track]");
@@ -111,7 +223,7 @@ document.querySelectorAll("[data-testimonial-carousel]").forEach((carousel) => {
   function startAutoPlay() {
     stopAutoPlay();
     if (reducedMotion.matches || document.hidden) return;
-    autoTimer = window.setInterval(() => goTo(currentIndex + 1), TESTIMONIAL_INTERVAL);
+    autoTimer = window.setInterval(() => goTo(currentIndex + 1), CAROUSEL_INTERVAL);
   }
 
   function restartAutoPlay() {
