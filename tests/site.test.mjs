@@ -19,6 +19,7 @@ assert.match(html, /Vermelho[\s\S]*imediatamente/i);
 assert.match(html, /não substitui[\s\S]*atendimento veterinário/i);
 assert.equal((html.match(/class="demo-card/g) || []).length, 20);
 assert.equal((html.match(/demo-slide/g) || []).length, 20);
+assert.equal((html.match(/loading="eager"/g) || []).length, 4);
 assert.match(html, /data-demo-carousel/);
 assert.match(html, /data-demo-track/);
 assert.doesNotMatch(html, /class="featured-demos"/);
