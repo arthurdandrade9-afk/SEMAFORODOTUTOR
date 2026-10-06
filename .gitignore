@@ -1,8 +1,10 @@
 # Arquivos-fonte pesados usados somente para gerar as capas finais
 assets/images/bonus/*-base.png
+assets/images/failure/failure-storyboard-source.png
 
 # Ferramentas locais de composição; não são necessárias no site publicado
 tools/
+*-check.png
 
 # Arquivos do sistema e editores
 .DS_Store

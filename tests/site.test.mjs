@@ -25,11 +25,29 @@ assert.match(html, /Google[\s\S]*pânico|pânico[\s\S]*Google/i);
 assert.doesNotMatch(html, /id="responsabilidade"/);
 assert.match(html, /data-testimonials-placeholder/);
 assert.match(html, /section class="social-proof[^>]+hidden/);
+assert.match(html, /class="hero-showcase"/);
+assert.match(html, /assets\/images\/hero-product-composite\.png/);
+assert.doesNotMatch(html, /class="product-page/);
+assert.doesNotMatch(html, /class="hero-bonus-rack/);
+assert.equal((html.match(/class="failure-card/g) || []).length, 4);
 
 for (let index = 1; index <= 6; index += 1) {
   const file = `bonus-${String(index).padStart(2, "0")}.png`;
   assert.ok(
     fs.existsSync(path.join(root, "assets", "images", "bonus", file)),
+    `${file} precisa existir`,
+  );
+}
+
+assert.ok(
+  fs.existsSync(path.join(root, "assets", "images", "hero-product-composite.png")),
+  "hero-product-composite.png precisa existir",
+);
+
+for (let index = 1; index <= 4; index += 1) {
+  const file = `failure-avatar-${String(index).padStart(2, "0")}.png`;
+  assert.ok(
+    fs.existsSync(path.join(root, "assets", "images", "failure", file)),
     `${file} precisa existir`,
   );
 }
