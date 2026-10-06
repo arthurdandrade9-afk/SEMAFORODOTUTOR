@@ -276,9 +276,9 @@ h3 { font-family: var(--font-display); }
 .gallery-section { background: #f7f4ec; }
 .demo-carousel { position: relative; max-width: 1150px; margin: 0 auto; }
 .demo-carousel__frame { position: relative; }
-.demo-track { display: flex; gap: 17px; overflow-x: auto; padding: 8px; scroll-behavior: smooth; scroll-padding: 8px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.demo-track { display: flex; gap: 17px; overflow-x: auto; padding: 8px; scroll-behavior: auto; scroll-padding: 8px; scrollbar-width: none; }
 .demo-track::-webkit-scrollbar { display: none; }
-.demo-slide { flex: 0 0 calc((100% - 51px) / 4); min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.demo-slide { flex: 0 0 calc((100% - 51px) / 4); min-width: 0; }
 .demo-card { position: relative; display: block; width: 100%; margin: 0; padding: 7px; overflow: hidden; border: 1px solid rgba(167, 124, 43, 0.25); border-radius: 3px; background: #fffaf0; box-shadow: 0 10px 25px rgba(55, 47, 29, 0.11); color: var(--ink); font: inherit; text-align: left; transition: transform 180ms ease, box-shadow 180ms ease; cursor: zoom-in; }
 .demo-card:hover { transform: translateY(-5px); box-shadow: 0 16px 32px rgba(55, 47, 29, 0.17); }
 .demo-card img { width: 100%; aspect-ratio: 0.707 / 1; object-fit: cover; }

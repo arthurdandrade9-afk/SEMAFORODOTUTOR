@@ -68,10 +68,31 @@ document.querySelectorAll("[data-demo-carousel]").forEach((carousel) => {
   const dotsContainer = carousel.querySelector("[data-demo-dots]");
   const status = carousel.querySelector("[data-demo-status]");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const CONTINUOUS_SPEED = 24;
   let currentPage = 0;
   let dots = [];
-  let autoTimer = null;
   let scrollFrame = null;
+  let animationFrame = null;
+  let lastTimestamp = null;
+  let loopWidth = 0;
+  let isHovered = false;
+  let isInteracting = false;
+  let hasFocus = false;
+  let manualPauseUntil = 0;
+  let scrollRemainder = 0;
+
+  const clones = slides.map((slide) => {
+    const clone = slide.cloneNode(true);
+    clone.dataset.demoClone = "true";
+    clone.setAttribute("aria-hidden", "true");
+    clone.tabIndex = -1;
+    clone.querySelectorAll("a, button, input, select, textarea, [tabindex]").forEach((element) => {
+      element.tabIndex = -1;
+    });
+    clone.addEventListener("click", () => openLightbox(Number(clone.dataset.demoIndex), clone));
+    track.append(clone);
+    return clone;
+  });
 
   const visibleCount = () => Math.max(1, Math.round(track.clientWidth / Math.max(slides[0]?.getBoundingClientRect().width || 1, 1)));
   const pageCount = () => Math.ceil(slides.length / visibleCount());
@@ -95,6 +116,7 @@ document.querySelectorAll("[data-demo-carousel]").forEach((carousel) => {
     const total = pageCount();
     const nextPage = (page + total) % total;
     updateControls(nextPage);
+    manualPauseUntil = performance.now() + 1100;
     track.scrollTo({ left: slideOffset(nextPage), behavior });
   }
 
@@ -108,7 +130,6 @@ document.querySelectorAll("[data-demo-carousel]").forEach((carousel) => {
       dot.setAttribute("aria-label", `Ver grupo ${index + 1} de demonstrativos`);
       dot.addEventListener("click", () => {
         goTo(index);
-        restartAutoPlay();
       });
       dotsContainer.append(dot);
       return dot;
@@ -116,60 +137,90 @@ document.querySelectorAll("[data-demo-carousel]").forEach((carousel) => {
     updateControls(Math.min(currentPage, total - 1));
   }
 
-  function stopAutoPlay() {
-    window.clearInterval(autoTimer);
-    autoTimer = null;
+  function measureLoop() {
+    loopWidth = clones[0] ? clones[0].offsetLeft - slides[0].offsetLeft : track.scrollWidth / 2;
   }
 
-  function startAutoPlay() {
-    stopAutoPlay();
-    if (reducedMotion.matches || document.hidden) return;
-    autoTimer = window.setInterval(() => goTo(currentPage + 1), CAROUSEL_INTERVAL);
+  function normalizeLoop() {
+    if (!loopWidth) return;
+    if (track.scrollLeft >= loopWidth) track.scrollLeft -= loopWidth;
+    if (track.scrollLeft < 0) track.scrollLeft += loopWidth;
   }
 
-  function restartAutoPlay() {
-    stopAutoPlay();
-    startAutoPlay();
+  function canMove(timestamp) {
+    return !reducedMotion.matches
+      && !document.hidden
+      && !document.body.classList.contains("is-lightbox-open")
+      && !isHovered
+      && !isInteracting
+      && !hasFocus
+      && timestamp >= manualPauseUntil;
+  }
+
+  function animate(timestamp) {
+    if (lastTimestamp === null) lastTimestamp = timestamp;
+    const elapsed = Math.min(timestamp - lastTimestamp, 64);
+    lastTimestamp = timestamp;
+
+    if (canMove(timestamp)) {
+      scrollRemainder += CONTINUOUS_SPEED * elapsed / 1000;
+      const wholePixels = Math.floor(scrollRemainder);
+      if (wholePixels > 0) {
+        track.scrollLeft += wholePixels;
+        scrollRemainder -= wholePixels;
+        normalizeLoop();
+      }
+    }
+
+    animationFrame = window.requestAnimationFrame(animate);
   }
 
   previousButton.addEventListener("click", () => {
-    goTo(currentPage - 1);
-    restartAutoPlay();
+    normalizeLoop();
+    const distance = Math.max(slides[1]?.offsetLeft - slides[0].offsetLeft || 1, 1) * visibleCount();
+    if (track.scrollLeft < distance) track.scrollLeft += loopWidth;
+    manualPauseUntil = performance.now() + 1100;
+    track.scrollBy({ left: -distance, behavior: "smooth" });
   });
 
   nextButton.addEventListener("click", () => {
-    goTo(currentPage + 1);
-    restartAutoPlay();
+    const distance = Math.max(slides[1]?.offsetLeft - slides[0].offsetLeft || 1, 1) * visibleCount();
+    manualPauseUntil = performance.now() + 1100;
+    track.scrollBy({ left: distance, behavior: "smooth" });
   });
 
   track.addEventListener("scroll", () => {
     if (scrollFrame) window.cancelAnimationFrame(scrollFrame);
     scrollFrame = window.requestAnimationFrame(() => {
-      const distance = Math.max(slideOffset(1), 1);
-      const page = Math.round(track.scrollLeft / distance);
+      const slideDistance = Math.max(slides[1]?.offsetLeft - slides[0].offsetLeft || 1, 1);
+      const normalizedPosition = loopWidth ? track.scrollLeft % loopWidth : track.scrollLeft;
+      const page = Math.floor((normalizedPosition / slideDistance) / visibleCount());
       if (page !== currentPage) updateControls(page);
     });
   }, { passive: true });
 
-  carousel.addEventListener("pointerdown", stopAutoPlay);
-  carousel.addEventListener("pointerup", restartAutoPlay);
-  carousel.addEventListener("pointercancel", restartAutoPlay);
-  carousel.addEventListener("mouseenter", stopAutoPlay);
-  carousel.addEventListener("mouseleave", startAutoPlay);
-  carousel.addEventListener("focusin", stopAutoPlay);
+  carousel.addEventListener("pointerdown", () => { isInteracting = true; });
+  carousel.addEventListener("pointerup", () => { isInteracting = false; });
+  carousel.addEventListener("pointercancel", () => { isInteracting = false; });
+  carousel.addEventListener("mouseenter", () => { isHovered = true; });
+  carousel.addEventListener("mouseleave", () => { isHovered = false; });
+  carousel.addEventListener("focusin", () => { hasFocus = true; });
   carousel.addEventListener("focusout", (event) => {
-    if (!carousel.contains(event.relatedTarget)) startAutoPlay();
+    if (!carousel.contains(event.relatedTarget)) hasFocus = false;
   });
   window.addEventListener("resize", () => {
     rebuildDots();
     goTo(0, "auto");
+    window.requestAnimationFrame(measureLoop);
   });
-  document.addEventListener("visibilitychange", () => document.hidden ? stopAutoPlay() : startAutoPlay());
-  reducedMotion.addEventListener?.("change", startAutoPlay);
 
+  measureLoop();
   rebuildDots();
   goTo(0, "auto");
-  startAutoPlay();
+  manualPauseUntil = 0;
+  animationFrame = window.requestAnimationFrame(animate);
+
+  window.addEventListener("pagehide", () => window.cancelAnimationFrame(animationFrame), { once: true });
 });
 
 document.querySelectorAll("[data-testimonial-carousel]").forEach((carousel) => {
