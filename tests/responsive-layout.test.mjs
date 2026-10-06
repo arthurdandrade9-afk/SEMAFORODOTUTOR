@@ -27,6 +27,7 @@ const browser = await chromium.launch({ headless: true });
 
 try {
   for (const viewport of [
+    { width: 2437, height: 1074 },
     { width: 1440, height: 960 },
     { width: 1024, height: 768 },
     { width: 768, height: 1024 },
@@ -60,6 +61,36 @@ try {
       assert.ok(box.right <= layout.viewportWidth + 1, `${name} termina fora da tela em ${viewport.width}px`);
     }
     assert.deepEqual([layout.mockupWidth, layout.mockupHeight], [1536, 1024], "o hero deve usar o mockup final sem corte");
+
+    if (viewport.width > 1600) {
+      const editorial = await page.evaluate(() => {
+        const measure = (selector) => {
+          const box = document.querySelector(selector).getBoundingClientRect();
+          return { left: box.left, right: box.right, width: box.width };
+        };
+        const problemCopy = measure(".problem__copy");
+        const problemPanel = measure(".problem__panel");
+        const insideImage = measure(".inside__image");
+        const insideCopy = measure(".inside__copy");
+        const audienceColumns = [...document.querySelectorAll(".audience__column")].map((column) => {
+          const box = column.getBoundingClientRect();
+          return { left: box.left, right: box.right, width: box.width };
+        });
+        return {
+          problemSpan: problemPanel.right - problemCopy.left,
+          problemGap: problemPanel.left - problemCopy.right,
+          insideSpan: insideCopy.right - insideImage.left,
+          insideGap: insideCopy.left - insideImage.right,
+          audienceColumns,
+        };
+      });
+
+      assert.ok(editorial.problemSpan <= 1320, "o bloco de dúvida deve manter largura editorial em telas ultrawide");
+      assert.ok(editorial.problemGap <= 150, "as colunas do bloco de dúvida não devem ficar visualmente separadas");
+      assert.ok(editorial.insideSpan <= 1280, "o bloco de conteúdo deve manter largura editorial em telas ultrawide");
+      assert.ok(editorial.insideGap <= 150, "imagem e texto do conteúdo devem permanecer relacionados");
+      assert.ok(editorial.audienceColumns.every((column) => column.width <= 640), "as colunas de público não devem esticar pela tela inteira");
+    }
 
     await page.locator("#depoimentos").scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector(".testimonial-slide img")?.naturalWidth > 0);
