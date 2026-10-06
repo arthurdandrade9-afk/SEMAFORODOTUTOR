@@ -1,0 +1,10 @@
+# Arquivos-fonte pesados usados somente para gerar as capas finais
+assets/images/bonus/*-base.png
+
+# Ferramentas locais de composição; não são necessárias no site publicado
+tools/
+
+# Arquivos do sistema e editores
+.DS_Store
+Thumbs.db
+.vscode/
