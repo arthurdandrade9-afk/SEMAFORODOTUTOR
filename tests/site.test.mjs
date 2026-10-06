@@ -31,6 +31,8 @@ assert.match(html, /data-testimonial-track/);
 assert.match(html, /class="hero-showcase"/);
 assert.match(html, /assets\/images\/hero-mockup-completo\.webp/);
 assert.match(html, /fetchpriority="high"/);
+assert.match(html, /assets\/css\/styles\.css\?v=20261006-2/);
+assert.match(html, /assets\/js\/main\.js\?v=20261006-2/);
 assert.doesNotMatch(html, /class="product-page/);
 assert.doesNotMatch(html, /class="hero-bonus-rack/);
 assert.equal((html.match(/class="failure-card/g) || []).length, 4);
