@@ -24,7 +24,10 @@ assert.match(html, /data-demo-carousel/);
 assert.match(html, /data-demo-track/);
 assert.doesNotMatch(html, /class="featured-demos"/);
 assert.doesNotMatch(html, /class="demo-grid"/);
-assert.equal((html.match(/class="bonus-card/g) || []).length, 6);
+assert.equal((html.match(/class="bonus-card"/g) || []).length, 6);
+assert.equal((html.match(/class="bonus-card__details"/g) || []).length, 6, "cada bônus deve ter uma explicação detalhada");
+assert.equal((html.match(/class="bonus-card__list"/g) || []).length, 6, "cada bônus deve enumerar o que está incluído");
+assert.equal((html.match(/class="bonus-card__benefit"/g) || []).length, 6, "cada bônus deve destacar seu benefício prático");
 assert.match(html, /R\$\s*17/);
 assert.match(html, /R\$\s*37/);
 assert.match(html, /Google[\s\S]*pânico|pânico[\s\S]*Google/i);
@@ -37,8 +40,8 @@ assert.match(html, /data-testimonial-track/);
 assert.match(html, /class="hero-showcase"/);
 assert.match(html, /assets\/images\/hero-mockup-completo\.webp/);
 assert.match(html, /fetchpriority="high"/);
-assert.match(html, /assets\/css\/styles\.css\?v=20261006-6/);
-assert.match(html, /assets\/js\/main\.js\?v=20261006-6/);
+assert.match(html, /assets\/css\/styles\.css\?v=20261006-7/);
+assert.match(html, /assets\/js\/main\.js\?v=20261006-7/);
 assert.doesNotMatch(html, /class="product-page/);
 assert.doesNotMatch(html, /class="hero-bonus-rack/);
 assert.equal((html.match(/class="failure-card/g) || []).length, 4);
@@ -89,5 +92,6 @@ for (const token of ["--forest", "--ivory", "--gold", "--signal-green", "--signa
 }
 assert.match(css, /prefers-reduced-motion/);
 assert.match(css, /@media\s*\(max-width:\s*760px\)/);
+assert.match(css, /\.bonus-grid \.bonus-card img[^}]*aspect-ratio:\s*2\s*\/\s*3[^}]*object-fit:\s*contain/s, "as capas dos bônus devem aparecer inteiras na proporção original");
 
 console.log("site structure: ok");
