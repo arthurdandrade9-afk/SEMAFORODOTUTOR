@@ -97,6 +97,12 @@ try {
       assert.ok(editorial.audienceColumns.every((column) => column.width <= 640), "as colunas de público não devem esticar pela tela inteira");
     }
 
+    await page.locator("#bonus").scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => [...document.querySelectorAll('.bonus-card img')].every(im => im.complete && im.naturalWidth > 0));
+    assert.equal(await page.locator('.bonus-card').count(),5);
+    const bonusOverflow=await page.evaluate(() => [...document.querySelectorAll('.bonus-card')].some(el=>el.scrollWidth>el.clientWidth+1));
+    assert.equal(bonusOverflow,false,'bônus sem conteúdo cortado');
+    if(viewport.width===1440 || viewport.width===390) await page.locator('#bonus').screenshot({path:`../../tmp/pdfs/bonus-${viewport.width}.png`});
     await page.locator("#depoimentos").scrollIntoViewIfNeeded();
     await page.waitForFunction(() => document.querySelector(".testimonial-slide img")?.naturalWidth > 0);
     await page.close();
